@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 ##############################################################################
-### 
+###
 ###
 ##############################################################################
 
@@ -16,25 +16,75 @@ import string
 from shutil import copyfile as cp
 
 
+##############################################################################
+### GLOBALS
+##############################################################################
+
 DOCKERFILE_DIR = '.'
-
-
 config = None
-with open('config', 'r') as f:
-    config = json.load(f)
+CONFIG_FILE = 'config'
 
-if config is None:
-    exit(2)
+##############################################################################
+
+def loadConfigFile(filename):
+    global config
+    try:
+        with open(filename, 'r') as f:
+            config = json.load(f)
+    except IOError:
+        print(''.join(['ERROR: could not find config file: ', filename]))
+        exit(2)
 
 def randstring(length):
     return ''.join(random.choice(string.lowercase) for i in range(length))
 
+##############################################################################
+def _run(cmd):
+    proc = subprocess.Popen(cmd)
+    #TODO
+
+class GitRepo:
+    currentbranch = None
+
+    def __init__(self, localpath, url):
+        self.path = path
+
+    def checkout(self, branch):
+        cmd = ['git', 'checkout', branch]
+        return _run(cmd)
+
+    def fetch(self, url, ref):
+        cmd = ['git', 'fetch', url, ref]
+        return _run(cmd)
+
+class Docker:
+    def __init__(self):
+        pass
+
+    def build(self, path):
+        pass
+
+    def run(self, cmd):
+        pass
+
+class Builder:
+    def __init__(self):
+        pass
+
+    def build(self):
+        pass
+
+    def publish(self):
+        pass
+
+
 def getReviews():
-    url = config['baseUrl'] + 'changes/?q=status:open+reviewer:self&o=CURRENT_REVISION'
+    url = config.get('baseUrl') + 'changes/?q=status:open+reviewer:self&o=CURRENT_REVISION'
 #    print 'url= ' + url
     ### set up http/auth stuff
     passwdMan = urllib2.HTTPPasswordMgrWithDefaultRealm()
-    passwdMan.add_password(None, url, config['username'], config['apiPasswd'])
+    passwdMan.add_password(None, url, config.get('username'),
+            config.get('apiPasswd'))
 
     authHandler = urllib2.HTTPDigestAuthHandler(passwdMan)
 
@@ -139,75 +189,67 @@ def startUCDContainer(dir):
     drunProc = subprocess.Popen(dockerRunCmd)
     return imageId
 
+def displayReviews(reviews):
+    for i, review in enumerate(reviews):
+        line = [' (', str(i), ') ', review.get('subject'),
+                review.get('owner').get('name')]
+        print(''.join(line))
+
+def getChange(reviews):
+    selected = False
+    changeindex = -1
+    while not selected:
+        try:
+            changeindex = int(raw_input())
+            if changeindex > 0 and changeindex <= len(reviews):
+                changeindex -= 1
+                selected = True
+        except ValueError:
+            pass # ignore non-numeric input
+    return reviews[changeindex]
 
 
+def main():
+    loadConfigFile(CONFIG_FILE)
+    reviews = getReviews()
+    displayReviews(reviews)
+    selectedChange = getChange(reviews)
 
+    project = selectedChange.get('project')
+    currentRev = selectedChange.get('current_revision')
 
-j = getReviews()
-
-### build git cmd
-i = 1
-for review in j:
-    line = [' (', str(i), ')  ', review['subject'], review['owner']['name']]
-    print ''.join(line)
-    i += 1
-
-### have the user pick a change to use
-selected = False
-changeNum = -1
-while not selected:
     try:
-        changeNum = int(raw_input())
-        if changeNum > 0 and changeNum <= len(j):
-            changeNum -= 1
-            selected = True
-    except ValueError:
-        pass
+        localProject = config.get('repos').get('project')
+    except KeyError:
+        print('ERROR: could not find project %s in config file' % project)
+        exit(1)
 
-### build the git command
-selectedChange = j[changeNum]
-# get the latest revision
-project = selectedChange['project']
-currentRev = selectedChange['current_revision']
+    print('INFO: project is %s' % project)
 
-### git fetch
-try:
-    localProject = config['repos'][project]
-except KeyError:
-    print('ERROR: Could not find project %s in config file' % project)
-    exit(1)
-#localProject = config['repos'].get(project, project[project.rindex('/'):])
-print('INFO: project is ' + localProject)
+    branch = checkoutChange(localProject, selectedChange, currentRev)
 
-branch = checkoutChange(localProject, selectedChange, currentRev)
+    if project != 'urban-deploy':
+        publishChange(localProject)
 
-if project != 'urban-deploy':
-    publishChange(localProject)
+    ucdDir = ''.join([config.get('workspace'), '/',
+            config.get('repos').get('urban-deploy')])
 
-ucdDir = config['workspace']+'/'+config['repos']['urban-deploy']
-buildUCD(ucdDir)
-imageId = startUCDContainer(ucdDir)
+    buildUCD(ucdDir)
+    imageId = startUCDContainer(ucdDir)
+    # FIXME seperate buildDockerIMage and start/run docker image
 
+    # TODO cleanup git branch (shoudl have changeId as branch name)
+    # apply to each affected repo
+    # should save original branch and check that back out when finished
 
-# FIXME this doesn't work as intended
-# clean up git branch
-# TODO save old branch and check that one back out
-#coBranchCmd = ['git', 'checkout', 'master']
-#subprocess.Popen(coBranchCmd, cwd=config['workspace']+'/'+localProject)
-#
-#delBranchCmd = ['git', 'branch', '-D', branch]
-#delBranchProc = subprocess.Popen(delBranchCmd,
-#        cwd=config['workspace']+'/'+localProject)
-#delBranchProc.wait()
-#if delBranchProc.returncode != 0:
-#    print('WARN: Unable to clean up git branch %(br)s in project %(pr)s' %
-#            {"br": branch, "pr": localProject})
+    ### get docker ip/port
+    dockerPsCmd = ['docker', 'ps']
+    dpsProc = subprocess.Popen(dockerPsCmd, stdout=subprocess.PIPE)
+    out, err = dpsProc.communicate()
+
+    # TODO make pretty output
+    print 'DOCKER OUTPUT:\n'+out
 
 
-### get docker ip/port
-dockerPsCmd = ['docker', 'ps']
-dpsProc = subprocess.Popen(dockerPsCmd, stdout=subprocess.PIPE)
-out, err = dpsProc.communicate()
-
-# TODO make pretty output
-print 'DOCKER OUTPUT:\n'+out
+if __name__ == '__main__':
+    main()
