@@ -1,3 +1,4 @@
 # ignore config file
 config
 ibm-ucd-install
+*.pyc
