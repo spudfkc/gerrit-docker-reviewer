@@ -25,8 +25,17 @@ config = None
 CONFIG_FILE = 'config'
 
 ##############################################################################
+### Util
+##############################################################################
 
 def loadConfigFile(filename):
+    '''
+    Loads a file into a JSON object/dict.
+
+    The file should be valid JSON using double-quotes.
+
+    Raises an Exception if the file could not be read
+    '''
     global config
     try:
         with open(filename, 'r') as f:
@@ -37,10 +46,21 @@ def loadConfigFile(filename):
 
 
 def randstring(length):
+    '''
+    Creates and returns a random string of lowercase letters of given length
+    '''
     return ''.join(random.choice(string.lowercase) for i in range(length))
 
 
 def _run(cmd, cwd='.'):
+    '''
+    Runs the given cmd in a subprocess.
+
+    cmd should be an array of strings that make up the command to run.
+    cwd should be the directory in which to run the commands.
+
+    Will raise an Exception if the command had a non-zero exit code.
+    '''
     proc = subprocess.Popen(cmd, cwd=cwd)
     proc.wait()
     if proc.returncode != 0:
@@ -51,6 +71,13 @@ def _run(cmd, cwd='.'):
 
 
 class GitRepo:
+    '''
+    This class represents a Git repository
+
+    It has several functions to do stuff with the repo, such as creating a new
+    branch, fetching, checking out a different branch, getting the current
+    branch.
+    '''
     localpath = None
 
     def __init__(self, localpath):
@@ -69,6 +96,12 @@ class GitRepo:
         return _run(cmd, cwd=self.localpath)
 
     def current_branch(self):
+        '''
+        Returns the current branch name (if on a branch)
+
+        I'm not actually sure what will happen if we're not on a branch and this
+        is called.
+        '''
         cmd = ['git', 'symbolic-ref', '--short', 'HEAD']
         proc = subprocess.Popen(cmd, cwd=self.localpath, stdout=subprocess.PIPE)
         out, err = proc.communicate()
@@ -76,6 +109,16 @@ class GitRepo:
 
 
 class UCDBuilder:
+    '''
+    This class handles the building of a UCD project.
+
+    This works similarly to GitRepo where you pass in a path for the project and
+    all functons take place there.
+
+    This is tailored specifically to UCD and it's dependencies. 
+    Assumes any projects that are not urban-deploy can be handled with a simple
+    'ant publish'
+    '''
     dir = None
 
     def __init__(self, dir):
@@ -105,6 +148,12 @@ class UCDBuilder:
 
 
 class Docker:
+    '''
+    Wrapper class for using Docker
+
+    Needs to be more generic, since at the moment it still is specific to UCD
+    and our UCD Dockerfile
+    '''
     def __init__(self):
         pass
 
@@ -142,6 +191,11 @@ class Docker:
 
 
 def getReviews():
+    '''
+    Gets all CURRENT REVISIONS of OPEN reviews that your user is a reviewer for.
+
+    Returns json object of reviews
+    '''
     url = config.get('baseUrl') + 'changes/?q=status:open+reviewer:self&o=CURRENT_REVISION'
     ### set up http/auth stuff
     passwdMan = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -161,6 +215,9 @@ def getReviews():
 
 
 def checkoutChange(localProject, selectedChange, currentRev):
+    '''
+    A function that does too much.
+    '''
     project = selectedChange.get('project')
     gitUrl = selectedChange['revisions'][currentRev]['fetch']['ssh']['url']
     gitRef = selectedChange['revisions'][currentRev]['fetch']['ssh']['ref']
@@ -211,6 +268,14 @@ def checkoutChange(localProject, selectedChange, currentRev):
 
 
 def displayReviews(reviews):
+    '''
+    Displays the given reviews in the terminal.
+
+    Each review is indexed, starting at 1.
+
+    Format:
+    (i) subject owner
+    '''
     for i, review in enumerate(reviews):
         line = [' (', str(i+1), ') ', review.get('subject'),
                 review.get('owner').get('name')]
@@ -218,6 +283,10 @@ def displayReviews(reviews):
 
 
 def getChange(reviews):
+    '''
+    Prompts the user to select a change to review given a list of reviews
+    This returns the selected change.
+    '''
     selected = False
     changeindex = -1
     while not selected:
