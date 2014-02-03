@@ -15,3 +15,14 @@
 ###Running
 chmod +x gerrit-get-changes.py
 ./gerrit-get-changes.py
+
+###Your directory structure should look like this
+.
+├── config
+├── Dockerfile
+├── ibm-ucd-install -> /home/ncc/workspace/urban-deploy/dist/install/ibm-ucd-install
+├── install.properties
+├── README.md
+├── reviewer.py
+└── TODO.md
+
