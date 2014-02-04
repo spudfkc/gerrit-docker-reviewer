@@ -13,3 +13,7 @@ everyone would need to put the #depends: in their commit messages.
 
 * parse the UCD install dir from the dockerfile
 it is already the top comment
+
+* find which docker/git and use full path
+
+* verify that docker can be used without sudo

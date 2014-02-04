@@ -61,6 +61,7 @@ def _run(cmd, cwd='.'):
 
     Will raise an Exception if the command had a non-zero exit code.
     '''
+    print('DEBUG: running cmd: ' + ' '.join(cmd))
     proc = subprocess.Popen(cmd, cwd=cwd)
     proc.wait()
     if proc.returncode != 0:
@@ -105,7 +106,7 @@ class GitRepo:
         cmd = ['git', 'symbolic-ref', '--short', 'HEAD']
         proc = subprocess.Popen(cmd, cwd=self.localpath, stdout=subprocess.PIPE)
         out, err = proc.communicate()
-        return out
+        return out.strip()
 
 
 class UCDBuilder:
@@ -166,19 +167,24 @@ class Docker:
         if successFound < 0:
             raise Exception('Docker image failed to build')
 
-        imageId = out[successFound - len(successMsg):].strip()
-        return imageId
+        imageId = out[successFound + len(successMsg):]
+        try:
+            tag = imageId.index('(')
+            if tag >= 0:
+                imageId = imageId[:tag]
+        except ValueError:
+            pass
+        return imageId.strip()
 
 
     # FIXME this is awful
-    def run(self, image, cmd):
+    def run(self, image, cmd=None):
         # run docker image - this path is determined by install.properties
         # the directory arg is determined by the install.properties file
         # TODO should probably pull this in from there somehow?
-        dockerRunCmd = ['docker', 'run', '-P', imageId,
-                '/opt/udeploy/servers/1/bin/server', 'run']
-
-        return subprocess.Popen(dockerRunCmd)
+        if cmd is None: 
+            cmd = ['docker', 'run', '-P', image, 'run']
+        _run(cmd)
 
     def ps(self):
         dockerPsCmd = ['docker', 'ps']
@@ -226,8 +232,6 @@ def checkoutChange(localProject, selectedChange, currentRev):
     urlParts = [gitUrl[:6], config['username'], '@', gitUrl[6:]]
 
     gitUrl = ''.join(urlParts)
-    gitCmd = ['git', 'fetch', gitUrl, gitRef]
-    print ' '.join(gitCmd)
 
     localProject = None
     try:
@@ -250,12 +254,12 @@ def checkoutChange(localProject, selectedChange, currentRev):
     git.new_branch(newbranch)
 
     ucdDir = projectDir
-    ucdBuiler = builder
-    if project == 'urban-deploy':
+    ucdBuilder = builder
+    ucdGit = None
+    if project != 'urban-deploy':
         ucdDir = ''.join([config.get('workspace'), '/',
             config.get('repos').get('urban-deploy')])
         ucdBuilder = UCDBuilder(ucdDir)
-    else:
         builder.publish()
 
     # Build UCD
@@ -320,9 +324,9 @@ def main():
 
     print('INFO: project is %s' % project)
 
-    branch = checkoutChange(localProject, selectedChange, currentRev)
+    checkoutChange(localProject, selectedChange, currentRev)
     docker = Docker()
-    image = docker.build(DOCKER_FILE_DIR)
+    image = docker.build(DOCKERFILE_DIR)
     runprocess = docker.run(image)
 
     print('done.')

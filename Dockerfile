@@ -14,4 +14,5 @@ ADD ibm-ucd-install /opt/ibm-ucd-install
 RUN chmod +x /opt/ibm-ucd-install/install-server.sh
 RUN /opt/ibm-ucd-install/install-server.sh
 
-ENTRYPOINT ["/bin/bash", "/opt/udeploy/servers/1/bin/server", "start"]
+ENTRYPOINT ["/bin/sh", "/opt/udeploy/servers/1/bin/server"]
+CMD ["--help"]
