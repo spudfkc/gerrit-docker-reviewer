@@ -9,12 +9,14 @@ import urllib2
 import json
 import subprocess
 import zipfile
+import os
 
 import random
 import string
 
 from shutil import copyfile as cp
-
+from shutil import copytree as cptree
+from shutil import rmtree as rmdir
 
 ##############################################################################
 ### GLOBALS
@@ -27,6 +29,14 @@ CONFIG_FILE = 'config'
 ##############################################################################
 ### Util
 ##############################################################################
+
+def copy(src, dest):
+    try:
+        cptree(src, dest)
+    except OSError as e:
+        if x.errorno == errorno.ENOTDIR:
+            cp(src, dest)
+        else: raise
 
 def loadConfigFile(filename):
     '''
@@ -158,6 +168,16 @@ class Docker:
     def __init__(self):
         pass
 
+    def pre_build(self):
+        if os.path.exists('ibm-ucd-install'):
+            rmdir('ibm-ucd-install')
+
+        src = config.get('repos').get('urban-deploy')
+        src = ''.join([config.get('workspace'), '/', src,
+            '/dist/install/ibm-ucd-install'])
+        dest = 'ibm-ucd-install'
+        copy(src, dest)
+
     def build(self, dockerfilepath):
         dockerBuildCmd = ['docker', 'build', dockerfilepath]
         dbuildProc = subprocess.Popen(dockerBuildCmd, stdout=subprocess.PIPE)
@@ -281,9 +301,9 @@ def displayReviews(reviews):
     (i) subject owner
     '''
     for i, review in enumerate(reviews):
-        line = [' (', str(i+1), ') ', review.get('subject'),
+        line = [' (', str(i+1), ') ', review.get('subject'), '-',
                 review.get('owner').get('name')]
-        print(''.join(line))
+        print(' '.join(line))
 
 
 def getChange(reviews):
@@ -326,6 +346,7 @@ def main():
 
     checkoutChange(localProject, selectedChange, currentRev)
     docker = Docker()
+    docker.pre_build()
     image = docker.build(DOCKERFILE_DIR)
     runprocess = docker.run(image)
 
