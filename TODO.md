@@ -1,9 +1,7 @@
 * Add dependencies
 Maybe have commit messages require other dependencies?
 
-
 #depends: <CHANGE-ID>
-
 
 and then recursively grab the dependencies? seems like a lot of process, since
 everyone would need to put the #depends: in their commit messages.
@@ -11,9 +9,12 @@ everyone would need to put the #depends: in their commit messages.
 
 
 
-* parse the UCD install dir from the dockerfile
-it is already the top comment
-
 * find which docker/git and use full path
 
 * verify that docker can be used without sudo
+
+* clean up git branches
+
+* switch to original branch when done
+
+* print out docker ps info? can we even do this? maybe add color
