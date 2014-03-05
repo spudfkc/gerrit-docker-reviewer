@@ -24,17 +24,21 @@ class UCDBuilder:
         return run(cmd, cwd=self.dir)
 
     def post_build(self):
+        print('DEBUG - UCDBuilder.post_build')
         # extract the install zip
         distzip = 'ibm-ucd-dev.zip'
         dist = [self.dir, '/dist/install/', distzip]
+        print('DEBUG - zipfile: ' + ''.join(dist))
         z = zipfile.ZipFile(''.join(dist))
-        z.extractall(''.join(dist[:len(dist)-1]))
+        print('DEBUG - extractall: ' + ''.join(dist[:len(dist)-1]))
+        z.extractall()
 
         # copy install.properties for non-interactive install
-        extractdir = '/dist/install/ibm-ucd-install/'
+  #      extractdir = '/dist/install/ibm-ucd-install/'
         installprops = 'install.properties'
-        dest = [self.dir, extractdir, installprops]
-        copy(installprops, ''.join(dest))
+ #       dest = [self.dir, extractdir, installprops]
+        copy(installprops, '/'.join(['ibm-ucd-install', installprops]))
+#        copy(installprops, ''.join(dest))
 
 
 class AntBuilder:

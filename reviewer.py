@@ -7,6 +7,7 @@
 
 import urllib2
 import json
+import sys
 
 from Gerrit import Gerrit
 from Builders import UCDBuilder
@@ -111,29 +112,37 @@ def getChange(reviews):
 
 
 def main():
+    onlyDeploy = False
+    if len(sys.argv) > 1:
+        if '-d' in sys.argv:
+            onlyDeploy = True
+
     global config
     config = util.loadConfigFile(CONFIG_FILE)
-    gerrit = Gerrit(config.get('baseUrl'), config.get('username'),
+
+    if not onlyDeploy:
+        gerrit = Gerrit(config.get('baseUrl'), config.get('username'),
             config.get('apiPasswd'))
-    reviews = gerrit.get_open_reviews()
-    if not len(reviews) > 0:
-        print('No open reviews')
-        exit(0)
-    displayReviews(reviews)
-    selectedChange = getChange(reviews)
+        reviews = gerrit.get_open_reviews()
+        if not len(reviews) > 0:
+            print('No open reviews')
+            exit(0)
+        displayReviews(reviews)
+        selectedChange = getChange(reviews)
 
-    project = selectedChange.get('project')
-    currentRev = selectedChange.get('current_revision')
+        project = selectedChange.get('project')
+        currentRev = selectedChange.get('current_revision')
 
-    try:
-        localProject = config.get('repos').get('project')
-    except KeyError:
-        print('ERROR: could not find project %s in config file' % project)
-        exit(1)
+        try:
+            localProject = config.get('repos').get('project')
+        except KeyError:
+            print('ERROR: could not find project %s in config file' % project)
+            exit(1)
 
-    print('INFO: project is %s' % project)
+        print('INFO: project is %s' % project)
 
-    checkoutChange(localProject, selectedChange, currentRev)
+        checkoutChange(localProject, selectedChange, currentRev)
+
     docker = UCDDocker(''.join([config.get('workspace'), '/',
         config.get('repos').get('urban-deploy')]))
     docker.pre_build()

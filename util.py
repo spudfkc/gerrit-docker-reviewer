@@ -5,6 +5,7 @@ import string
 import random
 import json
 import subprocess
+import errno
 
 
 def copy(src, dest):
@@ -14,7 +15,8 @@ def copy(src, dest):
     try:
         copytree(src, dest)
     except OSError as x:
-        if x.errorno == errorno.ENOTDIR:
+        print str(x)
+        if x.errno == errno.ENOTDIR:
             copyfile(src, dest)
         else: raise
 

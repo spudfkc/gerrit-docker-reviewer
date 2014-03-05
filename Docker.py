@@ -2,7 +2,7 @@ import subprocess
 import os
 
 from util import runcmd as _run
-from util import copy
+from util import copy as copy
 from shutil import rmtree
 
 class UCDDocker:
@@ -16,19 +16,24 @@ class UCDDocker:
         self.ucddir = ucddir
 
     def pre_build(self):
-        src = ''.join([ucddir, '/dist/install/ibm-ucd-install'])
+        src = ''.join([self.ucddir, '/dist/install/ibm-ucd-install'])
         if os.path.exists(src):
             rmtree(src)
 
         dest = 'ibm-ucd-install'
-        copy(src, dest)
+        print('DEBUG - copy from ' + str(src) + ' to ' + str(dest))
+        #copy(src, dest)
 
     def build(self, dockerfilepath):
         dockerBuildCmd = ['docker', 'build', dockerfilepath]
         dbuildProc = subprocess.Popen(dockerBuildCmd, stdout=subprocess.PIPE)
         out, err = dbuildProc.communicate()
         successMsg = 'Successfully built'
-        successFound = out.rindex(successMsg)
+        successFound = -1
+        try:
+            successFound = out.rindex(successMsg)
+        except ValueError:
+            pass
         if successFound < 0:
             raise Exception('Docker image failed to build')
 
@@ -41,13 +46,14 @@ class UCDDocker:
             pass
         return imageId.strip()
 
-    # FIXME this is awful
-    def run(self, image, cmd=None):
-        # run docker image - this path is determined by install.properties
-        # the directory arg is determined by the install.properties file
-        # TODO should probably pull this in from there somehow?
+    def run(self, image, daemon=False, cmd=None):
+        # TODO probably should have an option to start in daemon mode (default)
+        # and then maybe parse which ports the image is running on and display
+        # them to user.
         if cmd is None:
             cmd = ['docker', 'run', '-P', image, 'run']
+            if daemon:
+                cmd.insert(2, '-d')
         _run(cmd)
 
     def ps(self):
