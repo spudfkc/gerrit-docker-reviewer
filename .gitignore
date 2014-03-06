@@ -1,4 +1,5 @@
 # ignore config file
 config
+Dockerfile
 ibm-ucd-install
 *.pyc

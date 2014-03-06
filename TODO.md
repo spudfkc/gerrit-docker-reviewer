@@ -13,8 +13,15 @@ everyone would need to put the #depends: in their commit messages.
 
 * verify that docker can be used without sudo
 
-* clean up git branches
+* clean up git branches!!
 
-* switch to original branch when done
+* switch to original branch when done EVEN ON FAILURE
 
-* print out docker ps info? can we even do this? maybe add color
+* print out docker ps info? can we even do this? maybe add color. only in daemon mode?
+
+* build&deploy only with -D
+
+* daemon mode with -d
+
+* verbose with -v
+
