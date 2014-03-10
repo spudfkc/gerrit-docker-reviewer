@@ -112,11 +112,16 @@ def getChange(reviews):
 
 
 def main():
+    # parse arguments
     onlyDeploy = False
+    daemonMode = False
     if len(sys.argv) > 1:
-        if '-d' in sys.argv:
+        if '-D' in sys.argv:
             onlyDeploy = True
+        if '-d' in sys.argv:
+            daemonMode = True
 
+    # load config
     global config
     config = util.loadConfigFile(CONFIG_FILE)
 
