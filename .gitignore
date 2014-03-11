@@ -1,5 +1,11 @@
-# ignore config file
+# project specific
 config
 Dockerfile
 ibm-ucd-install
+
+# compiled python
 *.pyc
+
+# temp/swap files
+*.swp
+*~
