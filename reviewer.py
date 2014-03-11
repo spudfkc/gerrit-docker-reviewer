@@ -152,7 +152,10 @@ def main():
         config.get('repos').get('urban-deploy')]))
     docker.pre_build()
     image = docker.build(DOCKERFILE_DIR)
-    runprocess = docker.run(image)
+    runprocess = docker.run(image, daemon=daemonMode)
+    if daemonMode:
+        for mapping in docker.get_mapped_ports():
+            print(mapping)
 
     print('done.')
 

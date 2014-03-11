@@ -22,7 +22,7 @@ class UCDDocker:
 
         dest = 'ibm-ucd-install'
         print('DEBUG - copy from ' + str(src) + ' to ' + str(dest))
-        #copy(src, dest)
+        # copy(src, dest) # this isn't necessary? I'm actually not sure?
 
     def build(self, dockerfilepath):
         dockerBuildCmd = ['docker', 'build', dockerfilepath]
@@ -61,4 +61,11 @@ class UCDDocker:
         dpsProc = subprocess.Popen(dockerPsCmd, stdout=subprocess.PIPE)
         out, err = dpsProc.communicate()
         return out
+
+    def get_mapped_ports(self):
+        psout = self.ps()
+        result = psout[psout.find('0.0.0.0'):]
+        result = result[:result.find('    ')]
+        return result.split(',')
+
 

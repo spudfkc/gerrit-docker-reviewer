@@ -17,11 +17,5 @@ everyone would need to put the #depends: in their commit messages.
 
 * switch to original branch when done EVEN ON FAILURE
 
-* print out docker ps info? can we even do this? maybe add color. only in daemon mode?
-
-* build&deploy only with -D
-
-* daemon mode with -d
-
 * verbose with -v
 
