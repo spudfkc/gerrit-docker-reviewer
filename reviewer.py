@@ -111,15 +111,30 @@ def getChange(reviews):
     return reviews[changeindex]
 
 
+def display_help():
+    print(
+        '''
+        Usage: reviewer.py [-d] [-D]
+    
+            -d|--daemon           Starts the Docker container as a daemon.
+            -D|--deploy-only      Skips any Gerrit/Git operations and deploys 
+                                  your current UCD directory to a container.
+            -h|--help             Displays this text.
+        ''')
+
+
 def main():
     # parse arguments
     onlyDeploy = False
     daemonMode = False
     if len(sys.argv) > 1:
-        if '-D' in sys.argv:
+        if '-D' or '--deploy-only' in sys.argv:
             onlyDeploy = True
-        if '-d' in sys.argv:
+        if '-d' or '--daemon' in sys.argv:
             daemonMode = True
+        if '-h' or '--help' in sys.argv:
+            display_help()
+            return
 
     # load config
     global config
