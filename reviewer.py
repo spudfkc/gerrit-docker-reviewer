@@ -77,6 +77,9 @@ def checkoutChange(localProject, selectedChange, currentRev):
     # restore original branch
     git.checkout(originalbranch)
 
+    # cleanup the branch we made
+    git.delete_branch(newbranch)
+
 
 def displayReviews(reviews):
     '''

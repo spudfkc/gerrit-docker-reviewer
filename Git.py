@@ -28,6 +28,12 @@ class Git:
         cmd = ['git', 'fetch', url, ref]
         return _run(cmd, cwd=self.localpath)
 
+    def delete_branch(self, branchname):
+        if branchname == self.current_branch():
+            raise Exception('Cannot delete branch %s because you are currently on that branch' % branchname)
+        cmd = ['git', 'branch', '-D', branchname]
+        return _run(cmd, cwd=self.localpath)
+
     def current_branch(self):
         '''
         Returns the current branch name (if on a branch)
