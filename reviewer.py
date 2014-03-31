@@ -41,10 +41,9 @@ def checkoutChange(localProject, selectedChange, currentRev):
     gitUrl = ''.join(urlParts)
 
     localProject = None
-    try:
-        localProject = config.get('repos').get(project)
-    except ValueError:
-        raise Exception('Project %s not found in config file' % project)
+    localProject = config.get('repos').get(project)
+    if localProject is None:
+        raise Exception('Unable to find project %s in config!' % project)
     print('INFO: project is ' + str(localProject))
 
     projectDir = ''.join([config.get('workspace'), '/', localProject])
@@ -130,12 +129,12 @@ def main():
     # parse arguments
     onlyDeploy = False
     daemonMode = False
-    if len(sys.argv) > 1:
-        if '-D' or '--deploy-only' in sys.argv:
+    if len(sys.argv) > 0:
+        if '-D' in sys.argv or '--deploy-only' in sys.argv:
             onlyDeploy = True
-        if '-d' or '--daemon' in sys.argv:
+        if '-d' in sys.argv or '--daemon' in sys.argv:
             daemonMode = True
-        if '-h' or '--help' in sys.argv:
+        if '-h' in sys.argv or '--help' in sys.argv:
             display_help()
             return
 
