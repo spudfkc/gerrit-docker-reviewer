@@ -55,8 +55,7 @@ def runcmd(cmd, cwd='.'):
 
     Will raise an Exception if the command had a non-zero exit code.
     '''
-    print('DEBUG: running cmd: ' + ' '.join(cmd))
+    print('DEBUG: running cmd: ' + ' '.join(cmd) + ' @ ' + cwd)
     proc = subprocess.Popen(cmd, cwd=cwd)
     proc.wait()
-    if proc.returncode != 0:
-        raise Exception('Command failed: ' + ' '.join(cmd))
+    return proc.returncode

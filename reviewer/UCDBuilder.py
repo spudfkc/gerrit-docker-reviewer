@@ -1,13 +1,14 @@
+import Builder
 import zipfile
 
 from util import runcmd as run
 from shutil import copyfile as copy
 
-class Builder:
-    def __init__(self, dir):
-        self.dir = dir
 
-class UCDBuilder:
+class UCDBuilder(Builder):
+    majorver = 6
+    distzip = 'ibm-ucd-dev.zip'
+
     def __init__(self, dir):
         self.dir = dir
 
@@ -23,11 +24,17 @@ class UCDBuilder:
         cmd = ['ant', 'clean-all']
         return run(cmd, cwd=self.dir)
 
+    def update_major_version(self, ver):
+        if ver == 6:
+            self.majorver = 6
+            self.distzip = 'ibm-ucd-dev.zip'
+        else:
+            self.majorver = ver
+            self.distzip = 'udeploy-install.zip'
+
     def post_build(self):
-        print('DEBUG - UCDBuilder.post_build')
         # extract the install zip
-        distzip = 'ibm-ucd-dev.zip'
-        dist = [self.dir, '/dist/install/', distzip]
+        dist = [self.dir, '/dist/install/', self.distzip]
         print('DEBUG - zipfile: ' + ''.join(dist))
         z = zipfile.ZipFile(''.join(dist))
         print('DEBUG - extractall: ' + ''.join(dist[:len(dist)-1]))
@@ -39,8 +46,5 @@ class UCDBuilder:
  #       dest = [self.dir, extractdir, installprops]
         copy(installprops, '/'.join(['ibm-ucd-install', installprops]))
 #        copy(installprops, ''.join(dest))
+        
 
-
-class AntBuilder:
-    def __init__(self, dir):
-        pass

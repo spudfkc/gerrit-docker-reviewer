@@ -46,3 +46,18 @@ class Git:
         out, err = proc.communicate()
         return out.strip()
 
+    def clone(self, url, cwd=None):
+        cmd = ['git', 'clone', url]
+        if cwd is not None:
+            cmd.append(cwd)
+        return _run(cmd, cwd=self.localpath)
+
+    def is_repo(self):
+        cmd = ['git', 'status']
+        exitcode = _run(cmd, cwd=self.localpath)
+        return exitcode == 0
+
+    def init_repo(self):
+        if not self.is_repo():
+            cmd = ['git', 'init']
+            _run(cmd, cwd=self.localpath)

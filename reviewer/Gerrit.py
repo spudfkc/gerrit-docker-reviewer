@@ -14,10 +14,11 @@ class Gerrit:
         urllib2.install_opener(opener)
         pagehandle = urllib2.urlopen(url)
 
-        body = pagehandle.read()#[4:]
+        body = pagehandle.read()
         try:
             j = json.loads(body)
         except ValueError:
+            # Gerrit doesn't return valid json
             j = json.loads(body[4:])
         return j
 

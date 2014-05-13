@@ -1,0 +1,23 @@
+# Licensed Materials - Property of IBM Corp.
+# IBM UrbanCode Deploy
+# (c) Copyright IBM Corporation 2011, 2013. All Rights Reserved.
+#
+# U.S. Government Users Restricted Rights - Use, duplication or disclosure restricted by
+# GSA ADP Schedule Contract with IBM Corp.
+component.name=IBM UrbanCode Deploy
+component.directory=ibm-ucd/server
+version=dev
+
+install.server.dir=/opt/udeploy/servers/1/
+install.server.web.ip=0.0.0.0
+install.server.web.always.secure=false
+install.server.web.http.port=8080
+install.server.web.host=localhost
+
+database.type=mysql
+hibernate.connection.username=root
+hibernate.connection.url=jdbc:mysql://9.66.139.234:3306/docker_test
+rcl.server.url=
+
+
+nonInteractive=true

@@ -117,7 +117,7 @@ def display_help():
     print(
         '''
         Usage: reviewer.py [-d] [-D]
-    
+
             -d|--daemon           Starts the Docker container as a daemon.
             -D|--deploy-only      Skips any Gerrit/Git operations and deploys 
                                   your current UCD directory to a container.
