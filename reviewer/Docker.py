@@ -10,9 +10,10 @@ class Docker:
     def __init__(self):
         pass
 
-    def build(self, dockerfilepath):
+    def build(self, dockerfilepath='.'):
         '''
         Builds the Dockerfile at the specified path and returns the image ID.
+
         Raises an Exception if the image does not successfully build.
         '''
         cmd = ['docker', 'build', dockerfilepath]
@@ -25,8 +26,8 @@ class Docker:
             successfound = out.rindex(successmsg)
         except ValueError:
             pass
-        if sucessfound < 0:
-            raise Exception('Docker image failed to build')
+        if successfound < 0:
+            raise Exception('Dockerfile build failed')
 
         imageid = out[successfound + len(successmsg):]
         try:
@@ -38,25 +39,30 @@ class Docker:
         return imageid.strip()
 
     def run(self, image, daemon=False, cmd=None, exposeports=None):
-        basecmd = ['docker', 'run']
+        '''
+        Equivalent to `docker run` but a bit simplified
+        '''
+        basecmd = ['docker', 'run', image]
         if cmd is None:
             # TODO add default args to `docker run`
             pass
         else:
-            basecmd.append(image)
             basecmd.extend(cmd)
 
         if daemon:
             basecmd.insert(2, '-d')
 
-        _run(basecmd)
+        # TODO add expose ports functionality
+
+        if _run(basecmd) != 0:
+            raise Exception('Failed `docker run`')
 
     def ps(self):
         cmd = ['docker', 'ps']
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         out, err = proc.communicate()
         if err is not None:
-            raise Exception('failed to ps')
+            raise Exception('Failed `docker ps`')
         return out
 
     def get_mapped_ports(self):

@@ -10,7 +10,7 @@ import errno
 
 def copy(src, dest):
     '''
-    Recursively copy a directory with files 
+    Recursively copy a directory with files
     '''
     try:
         copytree(src, dest)
@@ -34,7 +34,7 @@ def loadConfigFile(filename):
         with open(filename, 'r') as f:
             config = json.load(f)
     except IOError:
-        print(''.join(['ERROR: could not find config file: ', filename]))
+#        print(''.join(['ERROR: could not find config file: ', filename]))
         exit(2)
     return config
 
@@ -51,7 +51,7 @@ def runcmd(cmd, cwd='.'):
     Runs the given cmd in a subprocess.
 
     cmd should be an array of strings that make up the command to run.
-    cwd should be the directory in which to run the commands.
+    cwd should be the directory in which to trun the commands.
 
     Will raise an Exception if the command had a non-zero exit code.
     '''
