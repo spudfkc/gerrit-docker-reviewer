@@ -3,6 +3,8 @@ from .. import Git
 from shutil import rmtree
 from os import makedirs
 from os.path import exists
+
+
 class GitTests(unittest.TestCase):
 
     test_git_dir = '/tmp/gittest'

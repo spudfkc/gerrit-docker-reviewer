@@ -10,12 +10,12 @@
  [2] `sudo apt-get install git`  
  [3] Docker Installation - http://docs.docker.io/en/latest/installation/ubuntulinux/  
 
-###Your directory structure should look like this
-.  
-├── config  
-├── Dockerfile  
-├── install.properties  
-├── README.md  
-├── reviewer.py  
-└── TODO.md  
 
+###Setup
+cp conf/nameless.config.template conf/nameless.config
+( edit conf/nameless.config to your liking )
+python nameless.py
+
+
+###Custom Builder/Docker
+Not yet supported

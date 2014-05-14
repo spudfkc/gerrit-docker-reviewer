@@ -1,6 +1,7 @@
 import unittest
 from reviewer.Docker import Docker
 
+
 class DockerTests(unittest.TestCase):
 
     test_image = 'spudfkc/java7'

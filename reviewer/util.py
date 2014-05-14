@@ -27,15 +27,11 @@ def loadConfigFile(filename):
 
     The file should be valid JSON using double-quotes.
 
-    Raises an Exception if the file could not be read
+    Raises an IOError if the file could not be read
     '''
     config = None
-    try:
-        with open(filename, 'r') as f:
-            config = json.load(f)
-    except IOError:
-#        print(''.join(['ERROR: could not find config file: ', filename]))
-        exit(2)
+    with open(filename, 'r') as f:
+        config = json.load(f)
     return config
 
 
@@ -53,7 +49,7 @@ def runcmd(cmd, cwd='.'):
     cmd should be an array of strings that make up the command to run.
     cwd should be the directory in which to trun the commands.
 
-    Will raise an Exception if the command had a non-zero exit code.
+    Returns the process's exit code
     '''
     print('DEBUG: running cmd: ' + ' '.join(cmd) + ' @ ' + cwd)
     proc = subprocess.Popen(cmd, cwd=cwd)
