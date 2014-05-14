@@ -1,6 +1,5 @@
 # project specific
-config
-Dockerfile
+*.config
 ibm-ucd-install
 
 # compiled python

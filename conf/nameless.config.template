@@ -1,0 +1,13 @@
+{
+    "gerrit-url": "<gerrit-url>/a/",
+    "gerrit-username": "<gerrit-username>",
+    "gerrit-api-password": "<gerrit-api-password",
+    "workspace": "</project/workspace>",
+    "default-builder": "UCDBuilder",
+    "default-docker": "UCDDocker",
+    "repos": {
+        "air-agent": "agent",
+        "urban-deploy": "urban-deploy",
+        "commons/webext-common": "webext-common"
+    }
+}
