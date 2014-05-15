@@ -1,5 +1,5 @@
 import unittest
-from reviewer.Docker import Docker
+import reviewer.Docker as docker
 
 
 class DockerTests(unittest.TestCase):
@@ -7,22 +7,19 @@ class DockerTests(unittest.TestCase):
     test_image = 'spudfkc/java7'
 
     def setUp(self):
-        self.docker = Docker()
+        pass
 
     def test_build(self):
-        pass
-        #dockerfile = '.'
-        #imageid = self.docker.build(dockerfile)
-        #self.assertNotEquals(imageid, None)
+        dockerfile = '.'
+        imageid = docker.build(dockerfile)
+        self.assertNotEquals(imageid, None)
 
     def test_run(self):
-        image = 'ubuntu'
-        self.docker.run(image)
+        image = 'spudfkc/java7'
+        cmds = ['echo', 'hello']
+        docker.run(image, cmd=cmds)
 
     def test_run_with_daemon(self):
-        pass
-
-    def test_run_with_cmd(self):
         pass
 
     def test_ps(self):

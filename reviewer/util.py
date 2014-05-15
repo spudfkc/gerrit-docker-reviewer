@@ -15,7 +15,6 @@ def copy(src, dest):
     try:
         copytree(src, dest)
     except OSError as x:
-        print str(x)
         if x.errno == errno.ENOTDIR:
             copyfile(src, dest)
         else: raise

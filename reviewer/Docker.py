@@ -1,72 +1,72 @@
 import subprocess
 from util import runcmd as _run
 
-class Docker:
-    '''
-    This is basic wrapper around Docker.
+'''
+This is basic wrapper around Docker.
 
-    It is used to interact with docker via command line.
+It is used to interact with docker via command line.
+'''
+
+def build(dockerfilepath='.'):
     '''
-    def __init__(self):
+    Builds the Dockerfile at the specified path and returns the image ID.
+
+    Raises an Exception if the image does not successfully build.
+    '''
+    cmd = ['docker', 'build', dockerfilepath]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    out, err = proc.communicate()
+
+    successmsg = 'Successfully built'
+    successfound = -1
+    try:
+        successfound = out.rindex(successmsg)
+    except ValueError:
         pass
+    if successfound < 0:
+        raise Exception('Dockerfile build failed')
 
-    def build(self, dockerfilepath='.'):
-        '''
-        Builds the Dockerfile at the specified path and returns the image ID.
+    imageid = out[successfound + len(successmsg):]
+    try:
+        tag = imageid.index('(')
+        if tag >= 0:
+            imageid = imageid[:tag]
+    except ValueError:
+        pass
+    return imageid.strip()
 
-        Raises an Exception if the image does not successfully build.
-        '''
-        cmd = ['docker', 'build', dockerfilepath]
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        out, err = proc.communicate()
+def run(image, cmd=None, daemon=False, exposeports=True):
+    '''
+    Equivalent to `docker run` but a bit simplified
+    '''
+    basecmd = ['docker', 'run', image]
+    if cmd is None:
+        # TODO add default args to `docker run`
+        pass
+    else:
+        basecmd.extend(cmd)
 
-        successmsg = 'Successfully built'
-        successfound = -1
-        try:
-            successfound = out.rindex(successmsg)
-        except ValueError:
-            pass
-        if successfound < 0:
-            raise Exception('Dockerfile build failed')
+    if exposeports:
+        basecmd.insert(2, '-P')
 
-        imageid = out[successfound + len(successmsg):]
-        try:
-            tag = imageid.index('(')
-            if tag >= 0:
-                imageid = imageid[:tag]
-        except ValueError:
-            pass
-        return imageid.strip()
+    if daemon:
+        basecmd.insert(2, '-d')
 
-    def run(self, image, daemon=False, cmd=None, exposeports=None):
-        '''
-        Equivalent to `docker run` but a bit simplified
-        '''
-        basecmd = ['docker', 'run', image]
-        if cmd is None:
-            # TODO add default args to `docker run`
-            pass
-        else:
-            basecmd.extend(cmd)
+    # TODO add expose ports functionality
 
-        if daemon:
-            basecmd.insert(2, '-d')
+    if _run(basecmd) != 0:
+        raise Exception('Failed `%s`' % str(basecmd))
 
-        # TODO add expose ports functionality
+def ps():
+    cmd = ['docker', 'ps']
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    out, err = proc.communicate()
+    if err is not None:
+        raise Exception('Failed `docker ps`')
+    return out
 
-        if _run(basecmd) != 0:
-            raise Exception('Failed `docker run`')
-
-    def ps(self):
-        cmd = ['docker', 'ps']
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        out, err = proc.communicate()
-        if err is not None:
-            raise Exception('Failed `docker ps`')
-        return out
-
-    def get_mapped_ports(self):
-        psout = self.ps()
-        result = psout[psout.find('0.0.0.0'):]
-        result = result[:result.find('    ')]
-        return result.split(',')
+def get_mapped_ports():
+    psout = ps()
+    result = psout[psout.find('0.0.0.0'):]
+    result = result[:result.find('    ')]
+    return result.split(',')

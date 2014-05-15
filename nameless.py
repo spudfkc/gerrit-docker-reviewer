@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
-##############################################################################
-###
-###
-##############################################################################
-
 import urllib2, json, sys, os, imp
+import reviewer.Docker as docker
 
 from reviewer import util
 from reviewer.Gerrit import Gerrit
@@ -15,7 +11,6 @@ from shutil import rmtree
 ### GLOBALS
 ##############################################################################
 
-DOCKERFILE_DIR = '.'
 config = None
 CONFIG_FILE = 'conf/nameless.config'
 
@@ -108,6 +103,7 @@ CONFIG_FILE = 'conf/nameless.config'
 
 
 def display_help():
+    # TODO update help message
     print(
         '''
         Usage: reviewer.py [-d] [-D]
@@ -122,11 +118,16 @@ def main():
     # parse arguments
     onlyDeploy = False
     daemonMode = False
+    doBuild = True
+    project = None
     if len(sys.argv) > 0:
         if '-D' in sys.argv or '--deploy-only' in sys.argv:
             onlyDeploy = True
         if '-d' in sys.argv or '--daemon' in sys.argv:
             daemonMode = True
+        if '--no-build' in sys.argv:
+            doBuild = False
+        # TODO add project option
         if '-h' in sys.argv or '--help' in sys.argv:
             display_help()
             return
@@ -135,21 +136,39 @@ def main():
     global config
     config = util.loadConfigFile(CONFIG_FILE)
 
-    buildername = config.get('default-builder')
-    dockername = config.get('default-docker')
 
-    buildermod = imp.load_source(buildername, ''.join(['./reviewer/plugins/', buildername, '.py']))
-    dockermod = imp.load_source(dockername, ''.join(['./reviewer/plugins/', dockername, '.py']))
+    if onlyDeploy:
+        project = config.get('default-project')
+    else:
+        # TODO gerrit stuff
+        pass
 
-    builder = buildermod.load('.')
-    docker = dockermod.load('.')
+    # get project builder and docker
+    projectdir = ''.join([config.get('workspace'), '/', config.get('repos').get(project)])
+
+    # build the project
+    if doBuild:
+        buildername = config.get('default-builder')
+        buildermod = imp.load_source(buildername, ''.join(['./reviewer/plugins/', buildername, '.py']))
+        builder = buildermod.load(projectdir)
+
+        builder.prebuild()
+        builder.build()
+        builder.postbuild()
+
+    # build a new docker image with our Dockerfile
+    imageid = docker.build()
+
+    # start up the new docker image
+    cmd = ['run']
+    if daemonMode:
+        cmd = ['start']
+    docker.run(imageid, cmd=cmd, daemon=daemonMode)
 
     print "done"
     exit(0)
 
-    if onlyDeploy:
-        # TODO do just deploy
-        return 0
+#### GERRIT STUFF
 
     gerrit = Gerrit(config.get('gerrit-url'), config.get('gerrit-username'),
         config.get('gerrit-api-password'))

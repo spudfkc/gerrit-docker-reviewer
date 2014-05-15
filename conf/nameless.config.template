@@ -3,8 +3,8 @@
     "gerrit-username": "<gerrit-username>",
     "gerrit-api-password": "<gerrit-api-password",
     "workspace": "</project/workspace>",
+    "default-project": "urban-deploy",
     "default-builder": "UCDBuilder",
-    "default-docker": "UCDDocker",
     "repos": {
         "air-agent": "agent",
         "urban-deploy": "urban-deploy",
