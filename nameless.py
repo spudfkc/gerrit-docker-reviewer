@@ -26,15 +26,21 @@ def build_change(project):
     builder.build()
     builder.postbuild()
 
+def get_project_dir(project):
+    '''
+    Returns the directory for the given project
+    '''
+    return ''.join([config.get('workspace'), '/', config.get('repos').get(project)])
+
 
 def checkout_change(project, change, revision):
     '''
     Fetch change/rev from Gerrit, checkout in local project repo.
     '''
     # create Git obj for the project's git repo
-    print '[DEBUG] sshinfo: %s ' % str(change)
-    projectdir = ''.join([config.get('workspace'), '/', project])
-    git = Git(projectdir)
+    print '[DEBUG] project: %s ' % str(project)
+    print '[DEBUG] project_dir %s ' % get_project_dir(project)
+    git = Git(get_project_dir(project))
     originalbranch = git.current_branch()
     # generate a new branch name from the change and random string
     newbranch = ''.join([change.get('change_id'), '/', util.randstring(8)])
@@ -175,13 +181,9 @@ def main():
         depproject = selectedchange.get('project')
         currentrev = selectedchange.get('current_revision')
 
-        try:
-            localproject = config.get('repos').get(depproject)
-        except KeyError:
+        if not get_project_dir(depproject):
             print('[ERROR] Could not find project %s in config' % depproject)
             return 1
-
-        print('[INFO] project is %s' % depproject)
 
         checkout_change(depproject, selectedchange, currentrev)
 
@@ -199,7 +201,7 @@ def main():
     docker.run(imageid, cmd=cmd, daemon=daemonMode)
 
     print "done"
-    exit(0)
+    return
 
 
 ##############################################################################

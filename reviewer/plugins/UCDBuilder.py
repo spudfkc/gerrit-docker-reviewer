@@ -21,7 +21,7 @@ class UCDBuilder(rBuilder):
         '''
         Creates the project dist and install files, and then published to CS repo
         '''
-        cmd = ['ant', 'resolve', 'dist', '-Ddojo.build.no=1']
+        cmd = ['ant', 'dist', '-Ddojo.build.no=1', '-Dresolve.no=1']
         if _run(cmd, cwd=self.dir) != 0:
             raise Exception('Failed to build project')
         self.publish()
@@ -41,16 +41,19 @@ class UCDBuilder(rBuilder):
 
         Runs `ant clean-all resolve`
         '''
-        cmd = ['ant', 'clean-all']
+        cmd = ['ant', 'clean-all', 'resolve']
         _run(cmd, cwd=self.dir)
 
     def postbuild(self):
         '''
         Extracts install dist and copies over install.properties for install
         '''
-        self._extract_dist()
-        self._copy_install_props()
-        self._copy_extracted_dist()
+        try:
+            self._extract_dist()
+            self._copy_install_props()
+            self._copy_extracted_dist()
+        except IOError:
+            pass
 
     def _extract_dist(self):
         # extract the install zip

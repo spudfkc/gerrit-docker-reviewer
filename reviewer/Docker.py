@@ -30,6 +30,13 @@ def build(dockerfilepath='.'):
             imageid = imageid[:tag]
     except ValueError:
         pass # no tag - continue
+
+    try:
+        # let's look for '\nRemoving'...
+        nl = imageid.index('\n')
+        imageid = imageid[:nl]
+    except ValueError:
+        pass #
     return imageid.strip()
 
 def run(image, cmd=None, daemon=False, exposeports=True):
