@@ -17,22 +17,19 @@ def build(dockerfilepath='.'):
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     out, err = proc.communicate()
 
-    successmsg = 'Successfully built'
+    successmsg = 'Successfully built '
     successfound = -1
     try:
-        successfound = out.rindex(successmsg)
+        imageid = out[out.rindex(successmsg) + len(successmsg):]
     except ValueError:
-        pass
-    if successfound < 0:
         raise Exception('Dockerfile build failed')
 
-    imageid = out[successfound + len(successmsg):]
     try:
         tag = imageid.index('(')
         if tag >= 0:
             imageid = imageid[:tag]
     except ValueError:
-        pass
+        pass # no tag - continue
     return imageid.strip()
 
 def run(image, cmd=None, daemon=False, exposeports=True):

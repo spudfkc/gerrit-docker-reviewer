@@ -13,6 +13,8 @@ class DockerTests(unittest.TestCase):
         dockerfile = '.'
         imageid = docker.build(dockerfile)
         self.assertNotEquals(imageid, None)
+        print('>ImageId: %s ' % imageid)
+        # FIXME how to test that what is returned is the imageid?
 
     def test_run(self):
         image = 'spudfkc/java7'

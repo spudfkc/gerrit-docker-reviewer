@@ -9,6 +9,6 @@ class GerritTests(unittest.TestCase):
 
     def test_get_open_reviews(self):
         pass
-
+        
     def tearDown(self):
         pass

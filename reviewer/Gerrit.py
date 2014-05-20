@@ -4,6 +4,8 @@ import urllib2
 class Gerrit:
     _url_openreviews = 'changes/?q=status:open+reviewer:self&o=CURRENT_REVISION'
 
+    cached_reviews = None
+
     def __init__(self, url, username, apikey):
         self.url = url
         self.username = username
@@ -30,14 +32,19 @@ class Gerrit:
             j = json.loads(body[4:])
         return j
 
+    def _update_open_reviews(self):
+        url = ''.join([self.url, self._url_openreviews])
+        self.cached_reviews = self._gerrit_request(url)
+
     def get_open_reviews(self):
         '''
         Gets all CURRENT REVISIONS of OPEN reviews that your user is a reviewer for.
 
         Returns json object of reviews
         '''
-        url = ''.join([self.url, self._url_openreviews])
-        return self._gerrit_request(url)
+        if self.cached_reviews is None:
+            self._update_open_reviews();
+        return self.cached_reviews
 
     def get_change(changeId):
         pass
