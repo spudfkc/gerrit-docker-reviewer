@@ -12,9 +12,9 @@
 
 
 ###Setup
-cp conf/nameless.config.template conf/nameless.config
-( edit conf/nameless.config to your liking )
-python nameless.py
+cp conf/nameless.config.template conf/nameless.config  
+edit conf/nameless.config to your liking  
+python nameless.py  
 
 
 ###Custom Builder/Docker
